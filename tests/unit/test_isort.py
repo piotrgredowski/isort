@@ -914,6 +914,30 @@ def test_remove_imports() -> None:
     test_output = isort.code(test_input, remove_imports=["x.y"])
     assert test_output == ""
 
+def test_replace_imports() -> None:
+    """Ensures replacing imports works as expected."""
+    test_input = "import some_lib\nfrom x import y\nfrom lib_old import sth\n from a import b"
+    test_output = isort.code(test_input, replace_imports=["lib_old:lib_new", "lib2:lib5", "a.b:c.d"])
+    assert test_output == "import some_lib\nfrom x import y\nfrom lib_new import sth\n from c import d"
+
+    # # Using natural syntax
+    # test_input = (
+    #     "import lib6\n" "import lib2\n" "import lib5\n" "import lib1\n" "from lib8 import a"
+    # )
+    # test_output = isort.code(
+    #     code=test_input, remove_imports=["import lib2", "import lib6", "from lib8 import a"]
+    # )
+    # assert test_output == "import lib1\nimport lib5\n"
+
+    # # From imports
+    # test_input = "from x import y"
+    # test_output = isort.code(test_input, remove_imports=["x"])
+    # assert test_output == ""
+
+    # test_input = "from x import y"
+    # test_output = isort.code(test_input, remove_imports=["x.y"])
+    # assert test_output == ""
+
 
 def test_comments_above():
     """Test to ensure comments above an import will stay in place"""

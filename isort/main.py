@@ -447,6 +447,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Shows extra quiet output, only errors are outputted.",
     )
     parser.add_argument(
+        "-r",
+        "--replace",
+        dest="replace_imports",
+        action="append",
+        help="Replaces the specified import with new import in all files.",
+    )
+    parser.add_argument(
         "--rm",
         "--remove-import",
         dest="remove_imports",

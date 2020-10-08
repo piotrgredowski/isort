@@ -29,6 +29,8 @@ def sorted_imports(
     formatted_output: List[str] = parsed.lines_without_imports.copy()
     remove_imports = [format_simplified(removal) for removal in config.remove_imports]
 
+    replace_imports = [format_simplified(replacement).split(':') for replacement in config.replace_imports]
+
     sections: Iterable[str] = itertools.chain(parsed.sections, config.forced_separate)
 
     if config.no_sections:
@@ -64,10 +66,10 @@ def sorted_imports(
             )
 
         straight_imports = _with_straight_imports(
-            parsed, config, straight_modules, section, remove_imports, import_type
+            parsed, config, straight_modules, section, remove_imports, replace_imports, import_type
         )
         from_imports = _with_from_imports(
-            parsed, config, from_modules, section, remove_imports, import_type
+            parsed, config, from_modules, section, remove_imports, replace_imports, import_type
         )
 
         lines_between = [""] * (
@@ -217,6 +219,7 @@ def _with_from_imports(
     from_modules: Iterable[str],
     section: str,
     remove_imports: List[str],
+    replace_imports: List[List[str]],
     import_type: str,
 ) -> List[str]:
     output: List[str] = []
@@ -246,6 +249,27 @@ def _with_from_imports(
             from_imports = [
                 line for line in from_imports if f"{module}.{line}" not in remove_imports
             ]
+
+        if replace_imports:
+            old_imports, new_imports = zip(*replace_imports)
+
+            old_froms, old_from_imports = zip(*old_import.split(".") for old_import in old_imports)
+            new_froms, new_from_imports = zip(*new_import.split(".") for new_import in new_imports)
+
+
+
+            # new_from_imports = []
+
+            for line in from_imports:
+                if f"{module}.{line}" in old_imports:
+
+                else:
+                    new_from_imports.append(line)
+            from_imports = [
+                line for line in from_imports if f"{module}.{line}" not in [replacement[0] for replacement in replace_imports]
+            ]
+
+
 
         sub_modules = [f"{module}.{from_import}" for from_import in from_imports]
         as_imports = {
@@ -510,12 +534,16 @@ def _with_straight_imports(
     straight_modules: Iterable[str],
     section: str,
     remove_imports: List[str],
+    replace_imports: List[List[str]],
     import_type: str,
 ) -> List[str]:
     output: List[str] = []
     for module in straight_modules:
         if module in remove_imports:
             continue
+
+        # if module in [replace_import[0] for replace_import in replace_imports]:
+        #     print(module)
 
         import_definition = []
         if module in parsed.as_map["straight"]:
